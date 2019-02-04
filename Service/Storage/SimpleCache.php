@@ -2,25 +2,25 @@
 
 namespace Noxlogic\RateLimitBundle\Service\Storage;
 
-use Doctrine\Common\Cache\Cache;
 use Noxlogic\RateLimitBundle\Service\RateLimitInfo;
+use Psr\SimpleCache\CacheInterface;
 
-class DoctrineCache implements StorageInterface {
-
+class SimpleCache implements StorageInterface
+{
     /**
-     * @var \Doctrine\Common\Cache\Cache
+     * @var CacheInterface
      */
     protected $client;
 
-    public function __construct(Cache $client)
+    public function __construct(CacheInterface $client)
     {
         $this->client = $client;
     }
 
     public function getRateInfo($key)
     {
-        $info = $this->client->fetch($key);
-        if ($info === false || !array_key_exists('limit', $info)) {
+        $info = $this->client->get($key);
+        if ($info === null || !array_key_exists('limit', $info)) {
             return false;
         }
 
@@ -29,28 +29,27 @@ class DoctrineCache implements StorageInterface {
 
     public function limitRate($key)
     {
-        $info = $this->client->fetch($key);
-        if ($info === false || !array_key_exists('limit', $info)) {
+        $info = $this->client->get($key);
+        if ($info === null || !array_key_exists('limit', $info)) {
             return false;
         }
 
         $info['calls']++;
+        $ttl = $info['reset'] - time();
 
-        $expire = $info['reset'] - time();
-
-        $this->client->save($key, $info, $expire);
+        $this->client->set($key, $info, $ttl);
 
         return $this->createRateInfo($info);
     }
 
     public function createRate($key, $limit, $period)
     {
-        $info          = array();
-        $info['limit'] = $limit;
-        $info['calls'] = 1;
-        $info['reset'] = time() + $period;
-
-        $this->client->save($key, $info, $period);
+        $info = [
+            'limit' => $limit,
+            'calls' => 1,
+            'reset' => time() + $period,
+        ];
+        $this->client->set($key, $info, $period);
 
         return $this->createRateInfo($info);
     }
