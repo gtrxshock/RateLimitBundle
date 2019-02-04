@@ -3,8 +3,10 @@
 namespace Noxlogic\RateLimitBundle\EventListener;
 
 use Noxlogic\RateLimitBundle\Annotation\RateLimit;
+use Noxlogic\RateLimitBundle\Events\BlockEvent;
 use Noxlogic\RateLimitBundle\Events\CheckedRateLimitEvent;
 use Noxlogic\RateLimitBundle\Events\GenerateKeyEvent;
+use Noxlogic\RateLimitBundle\Events\GetResponseEvent;
 use Noxlogic\RateLimitBundle\Events\RateLimitEvents;
 use Noxlogic\RateLimitBundle\Service\RateLimitService;
 use Noxlogic\RateLimitBundle\Util\PathLimitProcessor;
@@ -41,6 +43,7 @@ class RateLimitAnnotationListener extends BaseListener
         RateLimitService $rateLimitService,
         PathLimitProcessor $pathLimitProcessor
     ) {
+        //todo:use an event dispatcher passed into onKernelController
         $this->eventDispatcher = $eventDispatcher;
         $this->rateLimitService = $rateLimitService;
         $this->pathLimitProcessor = $pathLimitProcessor;
@@ -95,7 +98,7 @@ class RateLimitAnnotationListener extends BaseListener
         $request->attributes->set('rate_limit_info', $rateLimitInfo);
 
         // Reset the rate limits
-        if(time() >= $rateLimitInfo->getResetTimestamp()) {
+        if(!$rateLimitInfo->isBlocked() && time() >= $rateLimitInfo->getResetTimestamp()) {
             $this->rateLimitService->resetRate($key);
             $rateLimitInfo = $this->rateLimitService->createRate($key, $rateLimit->getLimit(), $rateLimit->getPeriod());
             if (! $rateLimitInfo) {
@@ -106,19 +109,38 @@ class RateLimitAnnotationListener extends BaseListener
         }
 
         // When we exceeded our limit, return a custom error response
-        if ($rateLimitInfo->getCalls() > $rateLimitInfo->getLimit()) {
+        if (!$rateLimitInfo->isBlocked() && $rateLimitInfo->getCalls() > $rateLimitInfo->getLimit()) {
+            $this->rateLimitService->setBlock(
+                $rateLimitInfo,
+                $rateLimit->getBlockPeriod() > 0 ? $rateLimit->getBlockPeriod() : $rateLimit->getPeriod()
+            );
+            $this->eventDispatcher->dispatch(RateLimitEvents::BLOCK_AFTER, new 
+                                             
+                                             
+                                             ($rateLimitInfo, $request));
+        }
 
+        if ($rateLimitInfo->isBlocked()) {
             // Throw an exception if configured.
             if ($this->getParameter('rate_response_exception')) {
                 $class = $this->getParameter('rate_response_exception');
                 throw new $class($this->getParameter('rate_response_message'), $this->getParameter('rate_response_code'));
             }
 
-            $message = $this->getParameter('rate_response_message');
-            $code = $this->getParameter('rate_response_code');
-            $event->setController(function () use ($message, $code) {
+            $response = new Response(
+                $this->getParameter('rate_response_message'),
+                $this->getParameter('rate_response_code')
+            );
+
+            $eventResponse = new GetResponseEvent($request, $rateLimitInfo);
+            $this->eventDispatcher->dispatch(RateLimitEvents::RESPONSE_SENDING_BEFORE, $eventResponse);
+            if ($eventResponse->hasResponse()) {
+                $response = $eventResponse->getResponse();
+            }
+
+            $event->setController(function () use ($response) {
                 // @codeCoverageIgnoreStart
-                return new Response($message, $code);
+                return $response;
                 // @codeCoverageIgnoreEnd
             });
             $event->stopPropagation();
