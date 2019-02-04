@@ -4,6 +4,7 @@ namespace Noxlogic\RateLimitBundle\EventListener;
 
 use Noxlogic\RateLimitBundle\Annotation\RateLimit;
 use Noxlogic\RateLimitBundle\Events\BlockEvent;
+use Noxlogic\RateLimitBundle\Events\CheckedRateLimitEvent;
 use Noxlogic\RateLimitBundle\Events\GenerateKeyEvent;
 use Noxlogic\RateLimitBundle\Events\GetResponseEvent;
 use Noxlogic\RateLimitBundle\Events\RateLimitEvents;
@@ -67,6 +68,11 @@ class RateLimitAnnotationListener extends BaseListener
         $annotations = $event->getRequest()->attributes->get('_x-rate-limit', array());
         $rateLimit = $this->findBestMethodMatch($event->getRequest(), $annotations);
 
+        // Another treatment before applying RateLimit ?
+        $checkedRateLimitEvent = new CheckedRateLimitEvent($event->getRequest(), $rateLimit);
+        $this->eventDispatcher->dispatch(RateLimitEvents::CHECKED_RATE_LIMIT, $checkedRateLimitEvent);
+        $rateLimit = $checkedRateLimitEvent->getRateLimit();
+
         // No matching annotation found
         if (! $rateLimit) {
             return;
@@ -108,7 +114,10 @@ class RateLimitAnnotationListener extends BaseListener
                 $rateLimitInfo,
                 $rateLimit->getBlockPeriod() > 0 ? $rateLimit->getBlockPeriod() : $rateLimit->getPeriod()
             );
-            $this->eventDispatcher->dispatch(RateLimitEvents::BLOCK_AFTER, new BlockEvent($rateLimitInfo, $request));
+            $this->eventDispatcher->dispatch(RateLimitEvents::BLOCK_AFTER, new 
+                                             
+                                             
+                                             ($rateLimitInfo, $request));
         }
 
         if ($rateLimitInfo->isBlocked()) {

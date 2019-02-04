@@ -4,6 +4,7 @@ namespace Noxlogic\RateLimitBundle\Events;
 
 final class RateLimitEvents
 {
+
     /**
      * This event is dispatched when generating a key is doing
      */
@@ -18,4 +19,6 @@ final class RateLimitEvents
      * This event is dispatched before response is sent
      */
     const RESPONSE_SENDING_BEFORE = 'ratelimit.response.sending.before';
+
+    const CHECKED_RATE_LIMIT = 'ratelimit.checked.ratelimit';
 }

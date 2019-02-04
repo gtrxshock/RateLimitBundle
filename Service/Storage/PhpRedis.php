@@ -42,7 +42,8 @@ class PhpRedis implements StorageInterface
             return false;
         }
 
-        $this->client->hincrby($key, 'calls', 1);
+        $calls = $this->client->hincrby($key, 'calls', 1);
+        $info->setCalls($calls);
 
         return $info;
     }

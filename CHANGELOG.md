@@ -1,3 +1,24 @@
+## 1.13.0
+2019-01-04 axi
+- Added CheckedRateLimit event that allows RateLimit to be changed
+
+## 1.12.0
+2019-01-04
+- Something has gone wrong with the versions, just going to make a new one and
+move on
+
+## 1.11.1
+2018-07-02 mcfedr
+- Accept null rate response exception configuration
+
+## 1.10.3
+2019-01-04 DemigodCode
+- Deprecations in Symfony 4.2
+
+## 1.10.2
+2018-09-28 pierniq
+- Fixed setting calls in Redis/PhpRedis storage
+
 ## 1.10.1
 2018-06-29 mcfedr
 - Change cache keys to be valid PSR-6 keys
