@@ -4,6 +4,7 @@ namespace Noxlogic\RateLimitBundle\Tests\Events;
 
 use Noxlogic\RateLimitBundle\Events\GetResponseEvent;
 use Noxlogic\RateLimitBundle\Tests\TestCase;
+use Symfony\Component\HttpFoundation\Response;
 
 class GetResponseEventTest extends TestCase
 {
@@ -41,7 +42,7 @@ class GetResponseEventTest extends TestCase
      */
     public function testSetResponse(GetResponseEvent $event)
     {
-        $response = $this->getMockBuilder('Symfony\Component\HttpFoundation\Response')->getMock();
+        $response = $this->createMock(Response::class);
         $event->setResponse($response);
         self::assertSame($response, $event->getResponse());
 
