@@ -9,15 +9,23 @@ use Noxlogic\RateLimitBundle\Tests\TestCase;
 
 class PhpRedisTest extends TestCase
 {
-    public function setUp() {
+    public function setUp(): void {
         if (! class_exists('\Redis')) {
             $this->markTestSkipped('Php Redis client not installed');
         }
     }
+    
+    protected function getRedisMock() {
+        return $this->getMockBuilder('\Redis');
+    }
+
+    protected function getStorage($client) {
+        return new PhpRedis($client);
+    }
 
     public function testgetRateInfo()
     {
-        $client = $this->getMockBuilder('\Redis')
+        $client = $this->getRedisMock()
             ->setMethods(array('hgetall'))
             ->getMock();
         $client->expects($this->once())
@@ -25,7 +33,7 @@ class PhpRedisTest extends TestCase
               ->with('foo')
               ->will($this->returnValue(array('limit' => 100, 'calls' => 50, 'reset' => 1234, 'blocked' => 1)));
 
-        $storage = new PhpRedis($client);
+        $storage = $this->getStorage($client);
         $rli = $storage->getRateInfo('foo');
         $this->assertInstanceOf('Noxlogic\\RateLimitBundle\\Service\\RateLimitInfo', $rli);
         $this->assertEquals(100, $rli->getLimit());
@@ -36,7 +44,7 @@ class PhpRedisTest extends TestCase
 
     public function testcreateRate()
     {
-        $client = $this->getMockBuilder('\Redis')
+        $client = $this->getRedisMock()
             ->setMethods(array('hset', 'expire', 'hgetall'))
             ->getMock();
         $client->expects($this->once())
@@ -51,14 +59,14 @@ class PhpRedisTest extends TestCase
                     array('foo', 'blocked', 0)
               );
 
-        $storage = new PhpRedis($client);
+        $storage = $this->getStorage($client);
         $storage->createRate('foo', 100, 123);
     }
 
 
     public function testLimitRateNoKey()
     {
-        $client = $this->getMockBuilder('\Redis')
+        $client = $this->getRedisMock()
             ->setMethods(array('hgetall'))
             ->getMock();
         $client->expects($this->once())
@@ -66,13 +74,13 @@ class PhpRedisTest extends TestCase
               ->with('foo')
               ->will($this->returnValue([]));
 
-        $storage = new PhpRedis($client);
+        $storage = $this->getStorage($client);
         $this->assertFalse($storage->limitRate('foo'));
     }
 
     public function testLimitRateWithKey()
     {
-        $client = $this->getMockBuilder('\Redis')
+        $client = $this->getRedisMock()
             ->setMethods(array('hincrby', 'hgetall'))
             ->getMock();
         $client->expects($this->once())
@@ -88,7 +96,7 @@ class PhpRedisTest extends TestCase
               ->with('foo', 'calls', 1)
               ->will($this->returnValue(2));
 
-        $storage = new PhpRedis($client);
+        $storage = $this->getStorage($client);
         $storage->limitRate('foo');
     }
 
@@ -96,14 +104,14 @@ class PhpRedisTest extends TestCase
 
     public function testresetRate()
     {
-        $client = $this->getMockBuilder('\Redis')
+        $client = $this->getRedisMock()
             ->setMethods(array('del'))
             ->getMock();
         $client->expects($this->once())
               ->method('del')
               ->with('foo');
 
-        $storage = new PhpRedis($client);
+        $storage = $this->getStorage($client);
         $this->assertTrue($storage->resetRate('foo'));
     }
 

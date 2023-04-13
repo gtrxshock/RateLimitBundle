@@ -1,6 +1,6 @@
 <?php
 
-namespace Noxlogic\RateLimitBundle\Tests\Annotation;
+namespace Noxlogic\RateLimitBundle\Tests\Events;
 
 use Noxlogic\RateLimitBundle\Events\GenerateKeyEvent;
 use Noxlogic\RateLimitBundle\Tests\TestCase;
@@ -23,6 +23,14 @@ class GenerateKeyEventsTest extends TestCase
         $event = new GenerateKeyEvent($request, "");
 
         $this->assertEquals($request, $event->getRequest());
+    }
+
+    public function testPayload()
+    {
+        $request = new Request();
+        $event = new GenerateKeyEvent($request, "", 'bar');
+
+        $this->assertSame('bar', $event->getPayload());
     }
 
     public function testAddKey()

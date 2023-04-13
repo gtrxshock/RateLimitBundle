@@ -32,6 +32,11 @@ class RateLimit extends ConfigurationAnnotation
     protected $blockPeriod = 0;
 
     /**
+     * @var mixed Generic payload
+     */
+    protected $payload;
+
+    /**
      * Returns the alias name for an annotated configuration.
      *
      * @return string
@@ -98,6 +103,23 @@ class RateLimit extends ConfigurationAnnotation
     {
         $this->period = $period;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getPayload()
+    {
+        return $this->payload;
+    }
+
+    /**
+     * @param mixed $payload
+     */
+    public function setPayload($payload)
+    {
+        $this->payload = $payload;
+    }
+
 
     /**
      * @return int

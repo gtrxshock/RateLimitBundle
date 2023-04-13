@@ -104,7 +104,7 @@ noxlogic_rate_limit:
     enabled:              true
 
     # The storage engine where all the rates will be stored
-    storage_engine:       ~ # One of "redis"; "memcache"; "doctrine"; "php_redis"
+    storage_engine:       ~ # One of "redis"; "memcache"; "doctrine"; "php_redis"; "php_redis_cluster"
 
     # The redis client to use for the redis storage engine
     redis_client:         default_client
@@ -114,7 +114,7 @@ noxlogic_rate_limit:
     redis_service:    null # Example: project.predis
 
     # The Redis client to use for the php_redis storage engine
-    # Should be an instance of \Redis
+    # Depending on storage_engine an instance of \Redis or \RedisCluster
     php_redis_service:    null # Example: project.redis
 
     # The memcache client to use for the memcache storage engine
@@ -273,6 +273,12 @@ This bundle has several events. They are placed in
 
 ## Create a custom key generator
 
+### NOTE
+
+**Note that this bundle by default does not perform rate-limiting based on user's IP.
+If you wish to enable IP-based rate limiting or any other strategy, custom key generators are the way to go.**
+
+
 If you need to create a custom key generator, you need to register a listener to listen to the `ratelimit.generate.key` event:
 
 ```yaml
@@ -303,6 +309,25 @@ class RateLimitGenerateKeyListener
 ```
 
 Make sure to generate a key based on what is rate limited in your controllers.
+
+And example of a IP-based key generator can be:  
+
+```php
+<?php
+
+namespace MyBundle\Listener;
+
+use Noxlogic\RateLimitBundle\Events\GenerateKeyEvent;
+
+class IpBasedRateLimitGenerateKeyListener
+{
+    public function onGenerateKey(GenerateKeyEvent $event)
+    {
+        $request = $event->getRequest();
+        $event->addToKey($request->getClientIp());
+    }
+}
+```
 
 ## Creating custom response with `ratelimit.response.sending.before`
 
