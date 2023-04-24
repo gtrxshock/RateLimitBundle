@@ -77,10 +77,14 @@ class PathLimitProcessor
 
     private function pathMatched($expectedPath, $path)
     {
+        if ($expectedPath === '*') {
+            return true;
+        }
+
         $expectedParts = explode('/', $expectedPath);
         $actualParts = explode('/', $path);
 
-        if (sizeof($actualParts) < sizeof($expectedParts)) {
+        if (count($actualParts) < count($expectedParts)) {
             return false;
         }
 
@@ -92,4 +96,4 @@ class PathLimitProcessor
 
         return true;
     }
-} 
+}

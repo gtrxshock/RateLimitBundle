@@ -1,3 +1,33 @@
+## 1.17.0
+2021-04-06 jaytaph
+  - PHP8 compatibility added.
+
+## 1.16.2
+2021-03-13 jaytaph
+ - Issue #115: Reserved characters in redis are sanitized (fixes IPv6 issues)
+ 
+## 1.16.1
+2021-03-12 jaytaph
+- Added support for framework extra bundle 6.0 in the requirements
+
+## 1.16.0
+2021-02-01 jaytaph
+- Moved from PSR-0 to PSR-4 to keep composer2 compatibility (Maxime Horcholle)
+- Added redis cluster functionality (DemigodCode)
+
+## 1.15.1
+2020-02-11 jaytaph
+- Fixed Symfony5 compatibility issues
+
+## 1.15.0
+2020-02-10 jaytaph
+- Added support for Symfony 5.x and removed support for < 3.4 and < 4.3 (kai)
+- Dropped support for PHP 7.2 or lower
+
+## 1.14.0
+2019-02-19 goetas
+- Added Payload to RateLimit to allow better exceptions
+
 ## 1.13.0
 2019-01-04 axi
 - Added CheckedRateLimit event that allows RateLimit to be changed

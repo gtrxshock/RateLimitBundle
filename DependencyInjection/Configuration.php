@@ -17,7 +17,7 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritDoc}
      */
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('noxlogic_rate_limit');
         // Keep compatibility with symfony/config < 4.2
@@ -30,7 +30,7 @@ class Configuration implements ConfigurationInterface
             ->canBeDisabled()
             ->children()
                 ->enumNode('storage_engine')
-                    ->values(array('redis','memcache','doctrine', 'php_redis', 'simple_cache', 'cache'))
+                    ->values(array('redis','memcache','doctrine', 'php_redis', 'php_redis_cluster', 'simple_cache', 'cache'))
                     ->defaultValue('redis')
                     ->info('The storage engine where all the rates will be stored')
                 ->end()
