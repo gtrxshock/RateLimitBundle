@@ -70,7 +70,7 @@ class RateLimitAnnotationListener extends BaseListener
 
         // Another treatment before applying RateLimit ?
         $checkedRateLimitEvent = new CheckedRateLimitEvent($event->getRequest(), $rateLimit);
-        $this->eventDispatcher->dispatch(RateLimitEvents::CHECKED_RATE_LIMIT, $checkedRateLimitEvent);
+        $this->eventDispatcher->dispatch($checkedRateLimitEvent, RateLimitEvents::CHECKED_RATE_LIMIT);
         $rateLimit = $checkedRateLimitEvent->getRateLimit();
 
         // No matching annotation found
@@ -114,10 +114,7 @@ class RateLimitAnnotationListener extends BaseListener
                 $rateLimitInfo,
                 $rateLimit->getBlockPeriod() > 0 ? $rateLimit->getBlockPeriod() : $rateLimit->getPeriod()
             );
-            $this->eventDispatcher->dispatch(RateLimitEvents::BLOCK_AFTER, new 
-                                             
-                                             
-                                             ($rateLimitInfo, $request));
+            $this->eventDispatcher->dispatch(new BlockEvent($rateLimitInfo, $request), RateLimitEvents::BLOCK_AFTER);
         }
 
         if ($rateLimitInfo->isBlocked()) {
@@ -133,7 +130,7 @@ class RateLimitAnnotationListener extends BaseListener
             );
 
             $eventResponse = new GetResponseEvent($request, $rateLimitInfo);
-            $this->eventDispatcher->dispatch(RateLimitEvents::RESPONSE_SENDING_BEFORE, $eventResponse);
+            $this->eventDispatcher->dispatch($eventResponse, RateLimitEvents::RESPONSE_SENDING_BEFORE);
             if ($eventResponse->hasResponse()) {
                 $response = $eventResponse->getResponse();
             }
@@ -190,7 +187,7 @@ class RateLimitAnnotationListener extends BaseListener
             : $this->getAliasForRequest($event);
         $keyEvent->addToKey($rateLimitAlias);
 
-        $this->eventDispatcher->dispatch(RateLimitEvents::GENERATE_KEY, $keyEvent);
+        $this->eventDispatcher->dispatch($keyEvent, RateLimitEvents::GENERATE_KEY);
 
         return $keyEvent->getKey();
     }
