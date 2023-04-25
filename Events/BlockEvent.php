@@ -3,7 +3,7 @@
 namespace Noxlogic\RateLimitBundle\Events;
 
 use Noxlogic\RateLimitBundle\Service\RateLimitInfo;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Request;
 
 class BlockEvent extends Event
