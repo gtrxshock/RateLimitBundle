@@ -12,7 +12,7 @@ jobs:
             matrix:
                 php: [ "7.2", "7.3", "7.4", "8.0", "8.1" ]
                 composer_flags: [ "", "--prefer-lowest" ]
-                symfony_version: [ "^3.4", "^4.4", "^5.4", '^6.1']
+                symfony_version: [ "^4.4", "^5.4", '^6.1']
                 exclude:
 #                  - php: "8.0"
 #                    symfony_version: "^3.4"
