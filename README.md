@@ -1,7 +1,7 @@
 NoxlogicRateLimitBundle
 ========================
 
-[![Build Status](https://travis-ci.org/gtrxshock/RateLimitBundle.svg?branch=master)](https://travis-ci.org/gtrxshock/RateLimitBundle)
+[![Build Status](https://scrutinizer-ci.com/g/gtrxshock/RateLimitBundle/badges/build.png?b=master)](https://scrutinizer-ci.com/g/gtrxshock/RateLimitBundle)
 [![Code Coverage](https://scrutinizer-ci.com/g/gtrxshock/RateLimitBundle/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/gtrxshock/RateLimitBundle/?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/gtrxshock/RateLimitBundle/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/gtrxshock/RateLimitBundle/?branch=master)
 
