@@ -7,7 +7,7 @@ NoxlogicRateLimitBundle
 
 [![Latest Stable Version](https://poser.pugx.org/noxlogic/ratelimit-bundle/v/stable.svg)](https://packagist.org/packages/noxlogic/ratelimit-bundle) [![Total Downloads](https://poser.pugx.org/noxlogic/ratelimit-bundle/downloads.svg)](https://packagist.org/packages/noxlogic/ratelimit-bundle) [![Latest Unstable Version](https://poser.pugx.org/noxlogic/ratelimit-bundle/v/unstable.svg)](https://packagist.org/packages/noxlogic/ratelimit-bundle) [![License](https://poser.pugx.org/noxlogic/ratelimit-bundle/license.svg)](https://packagist.org/packages/noxlogic/ratelimit-bundle)
 
-This bundle provides enables the `@RateLimit` annotation which allows you to limit the number of connections to actions.
+This bundle provides enables the `#[RateLimit()]` attribute which allows you to limit the number of connections to actions.
 This is mostly useful in APIs.
 
 The bundle is prepared to work by default in cooperation with the `FOSOAuthServerBundle`. It contains a listener that adds the OAuth token to the cache-key. However, you can create your own key generator to allow custom rate limiting based on the request. See *Create a custom key generator* below.
@@ -16,7 +16,7 @@ This bundle is partially inspired by a GitHub gist from Ruud Kamphuis: https://g
 
 ## Features
 
- * Simple usage through annotations
+ * Simple usage through attributes
  * Customize rates per controller, action and even per HTTP method
  * Customize the period of a lock 
  * Multiple storage backends: Redis, Memcached and Doctrine cache
@@ -25,57 +25,45 @@ This bundle is partially inspired by a GitHub gist from Ruud Kamphuis: https://g
 
 Installation takes just few easy steps:
 
-### Step 1: Add the bundle to your composer.json
+### Step 1: Install the bundle using composer
 
 If you're not yet familiar with Composer see http://getcomposer.org.
-Add the NoxlogicRateLimitBundle in your composer.json:
-
-```json
-{
-    "require": {
-        "noxlogic/ratelimit-bundle": "1.x"
-    }
-}
-```
-
-Now tell composer to download the bundle by running the command:
+Tell composer to download the bundle by running the command:
 
 ``` bash
-php composer.phar update noxlogic/ratelimit-bundle
+composer require noxlogic/ratelimit-bundle
 ```
 
 ### Step 2: Enable the bundle
 
-Enable the bundle in the kernel:
+If you are using `symfony/flex` you can skip this step, the bundle will be enabled automatically, 
+otherwise you need to enable the bundle by adding it to the `bundles.php` file of your project.
 
 ``` php
-<?php
-// app/AppKernel.php
+<?php // bundles.php
 
-public function registerBundles()
-{
-    $bundles = array(
-        // ...
-        new Noxlogic\RateLimitBundle\NoxlogicRateLimitBundle(),
-    );
-}
+return [
+    // ..
+    Noxlogic\RateLimitBundle\NoxlogicRateLimitBundle::class => ['all' => true],
+    // ..
+];
 ```
 
-## Step 3: Install a storage engine
+### Step 3: Install a storage engine
 
-### Redis
+#### Redis
 
 If you want to use Redis as your storage engine, you might want  to install `SncRedisBundle`:
 
 * https://github.com/snc/SncRedisBundle
 
-### Memcache
+#### Memcache
 
 If you want to use Memcache, you might want to install `LswMemcacheBundle`
 
 * https://github.com/LeaseWeb/LswMemcacheBundle
 
-### Doctrine cache
+#### Doctrine cache
 
 If you want to use Doctrine cache as your storage engine, you might want to install `DoctrineCacheBundle`:
 
@@ -173,19 +161,16 @@ noxlogic_rate_limit:
 
 ### Simple rate limiting
 
-To enable rate limiting, you only need to add the annotation to the docblock of the specified action
+To enable rate limiting, you only need to add the attribute to the specified action
 
 ```php
 <?php
 
-use Noxlogic\RateLimitBundle\Annotation\RateLimit;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Noxlogic\RateLimitBundle\Attribute\RateLimit;
+use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route(...)
- *
- * @RateLimit(limit=1000, period=3600)
- */
+#[Route(...)]
+#[RateLimit(limit: 1000, period: 3600)]
 public function someApiAction()
 {
 }
@@ -199,14 +184,11 @@ its value will be equaled `period` parameter.
 ```php
 <?php
 
-use Noxlogic\RateLimitBundle\Annotation\RateLimit;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Noxlogic\RateLimitBundle\Attribute\RateLimit;
+use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route(...)
- *
- * @RateLimit(limit=1000, period=3600, blockPeriod=7200)
- */
+#[Route(...)]
+#[RateLimit(limit: 1000, period: 3600, blockPeriod: 7200)]
 public function someApiAction()
 {
 }
@@ -220,16 +202,13 @@ method argument is given, all other methods not defined are rated. This allows t
 ```php
 <?php
 
-use Noxlogic\RateLimitBundle\Annotation\RateLimit;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Noxlogic\RateLimitBundle\Attribute\RateLimit;
+use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route(...)
- *
- * @RateLimit(methods={"PUT", "POST"}, limit=1000, period=3600)
- * @RateLimit(methods={"GET"}, limit=1000, period=3600)
- * @RateLimit(limit=5000, period=3600)
- */
+#[Route(...)]
+#[RateLimit(methods: ["PUT", "POST"], limit: 1000, period: 3600)]
+#[RateLimit(methods: ["GET"], limit: 1000, period: 3600)]
+#[RateLimit(limit: 5000, period: 3600)]
 public function someApiAction()
 {
 }
@@ -243,17 +222,13 @@ limit for all actions, except the ones that actually defines a custom rate-limit
 ```php
 <?php
 
-use Noxlogic\RateLimitBundle\Annotation\RateLimit;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Noxlogic\RateLimitBundle\Attribute\RateLimit;
+use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Ratelimit(methods={"POST"}, limit=100, period=10); // 100 POST requests per 10 seconds
- */
+#[RateLimit(methods: ["POST"], limit: 100, period: 10)] // 100 POST requests per 10 seconds
 class DefaultController extends Controller
 {
-    /**
-     * @Ratelimit(method="POST", limit=200, period=10); // 200 POST requests to indexAction allowed.
-     */
+    #[RateLimit(methods: ["POST"], limit: 200, period: 10)] // 200 POST requests to indexAction allowed.
     public function indexAction()
     {
     }
@@ -416,10 +391,11 @@ class RateLimitLogBlockListener
 Instead of returning a Response object when a rate limit has exceeded, it's also possible to throw an exception. This 
 allows you to easily handle the rate limit on another level, for instance by capturing the ``kernel.exception`` event. 
 
+
 ## Running tests
 
 If you want to run the tests use:
 
 ```
-./vendor/bin/phpunit ./Tests
+./vendor/bin/simple-phpunit
 ```
